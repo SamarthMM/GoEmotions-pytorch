@@ -45,6 +45,9 @@ def train(args,
 
     # Prepare optimizer and schedule (linear warmup and decay)
     no_decay = ['bias', 'LayerNorm.weight']
+
+    #Changed from model.named_parameters model.classifier.named_parameters
+    #since only classifier layer is trained
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.classifier.named_parameters() if not any(nd in n for nd in no_decay)],
          'weight_decay': args.weight_decay},
@@ -231,6 +234,8 @@ def main(args):
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
     
     init_logger()
+    file_handler = logging.FileHandler(filename='info_frozenbert.log')
+    logger.addHandler(file_handler)
     set_seed(args)
 
     processor = GoEmotionsProcessor(args)
@@ -260,7 +265,9 @@ def main(args):
                 param].shape,param,GoemBERT[param].shape))
         elif 'bert' in param:
             if 'classifier' in param:
-                print('What!')
+                print('Sanity check failed: some layer had both bert and classifer! exiting')
+                print('What! ')
+                return
             else:
                 Diff=torch.all(torch.eq(TwitterBERT[param],GoemBERT[param]))
                 TwitterBERT[param].data.copy_(GoemBERT[param].data)

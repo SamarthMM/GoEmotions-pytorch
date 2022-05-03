@@ -24,8 +24,10 @@ from data_loader import (
     load_and_cache_examples,
     GoEmotionsProcessor
 )
-logger = logging.getLogger(__name__)
+import sys
 
+logger = logging.getLogger(__name__)
+file_handler = logging.FileHandler(filename='info_zeroshot.log')
 
 
 '''
@@ -113,9 +115,10 @@ def main(cli_args):
         args = AttrDict(json.load(f))
     logger.info("Training/evaluation parameters {}".format(args))
 
-    args.output_dir = 'ckpt/group/bert-base-cased-goemotions-group'
+    #args.output_dir = 'ckpt/group/bert-base-cased-goemotions-group'
 
     init_logger()
+    logger.addHandler(file_handler)
     set_seed(args)
 
     processor = GoEmotionsProcessor(args)
@@ -147,7 +150,7 @@ def main(cli_args):
     results = {}
     if args.do_eval:
         checkpoints = list(
-            os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + "/**/" + "pytorch_model.bin", recursive=True))
+            os.path.dirname(c) for c in sorted(glob.glob('ckpt/group/bert-base-cased-goemotions-group'+ "/**/" + "pytorch_model.bin", recursive=True))
         )
         if not args.eval_all_checkpoints:
             checkpoints = checkpoints[-1:]
@@ -163,7 +166,7 @@ def main(cli_args):
             result = dict((k + "_{}".format(global_step), v) for k, v in result.items())
             results.update(result)
 
-        output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
+        output_eval_file = os.path.join('ckpt/twitter_zeroshot/bert-base-cased-goemotions-twitterzeroshot', "eval_results.txt")
         with open(output_eval_file, "w") as f_w:
             for key in sorted(results.keys()):
                 f_w.write("{} = {}\n".format(key, str(results[key])))
