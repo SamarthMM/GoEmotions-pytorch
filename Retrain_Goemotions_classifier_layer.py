@@ -234,7 +234,7 @@ def main(args):
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
     
     init_logger()
-    file_handler = logging.FileHandler(filename='info_frozenbert.log')
+    file_handler = logging.FileHandler(filename='info_frozenbert_twitter200.log')
     logger.addHandler(file_handler)
     set_seed(args)
 
@@ -391,6 +391,7 @@ if __name__ == '__main__':
     cli_parser = argparse.ArgumentParser()
 
     cli_parser.add_argument("--taxonomy", type=str, required=True, help="Taxonomy (original, ekman, group)")
+    #cli_parser.add_argument("--output", type=str, required=True, help="Taxonomy (original, ekman, group)")
 
     cli_args = cli_parser.parse_args()
 
