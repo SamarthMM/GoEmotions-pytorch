@@ -132,16 +132,16 @@ def plot_zero_shot():
     fig1 = plt.figure(n)
     n+=1
     plt.suptitle('Zero Shot Test Accuracies')
-    plt.ylabel='Accuracy'
-    plt.xlabel='Training Step Checkpoint'
+    plt.ylabel('Accuracy')
+    plt.xlabel('Training Step Checkpoint')
     plt.plot(global_steps,accuracies)
     plt.autoscale(enable=True)
     plt.savefig('zero_shot_test_accuracies')
     fig2 = plt.figure(n)
     n+=1
     plt.suptitle('Zero Shot Test Macro_F1 scores')
-    plt.ylabel='Macro F1 Score'
-    plt.xlabel='Training Step Checkpoint'
+    plt.ylabel('Macro F1 Score')
+    plt.xlabel('Training Step Checkpoint')
     plt.plot(global_steps,macro_f1s)
     plt.autoscale(enable=True)
     plt.savefig('zero_shot_test_f1')
@@ -231,16 +231,16 @@ def plot_data(output_dir='ckpt/group/bert-base-cased-goemotions-group',taxonomy=
 
         fig1 = plt.figure(n)
         plt.suptitle(taxonomy+' '+mode+' Accuracies')
-        plt.ylabel='Accuracy'
-        plt.xlabel='Training Step Checkpoint'
+        plt.ylabel('Accuracy')
+        plt.xlabel('Training Step Checkpoint')
         plt.plot(global_steps,accuracies)
         plt.autoscale(enable=True)
         plt.savefig(taxonomy+'_'+mode+'_accuracies')
         n+=1
         fig2 = plt.figure(n)
         plt.suptitle(taxonomy+' '+mode+' Macro_F1 scores')
-        plt.ylabel='Macro F1 score'
-        plt.xlabel='Training Step Checkpoint'
+        plt.ylabel('Macro F1 score')
+        plt.xlabel('Training Step Checkpoint')
         plt.plot(global_steps,macro_f1s)
         plt.autoscale(enable=True)
         plt.savefig(taxonomy+'_'+mode+'_f1')
@@ -257,7 +257,10 @@ args=cli_parser.parse_args()
 print("taxonomy:",args.taxonomy)
 print("outputs dir: ",args.out_dir)
 
-plot_data(args.out_dir,args.taxonomy)
-#plot_zero_shot()
+if 'zero' in taxonomy and shot in taxonomy:
+    plot_zero_shot()
+else:
+    plot_data(args.out_dir,args.taxonomy)
+
 #plot_frozenbert_data()
 print(n-1," figures plotted")

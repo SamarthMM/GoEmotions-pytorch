@@ -1,5 +1,12 @@
-# GoEmotions Pytorch
+# Assignment 4: GoEmotions Pytorch
 
+NOTE: Our Assignemnt is split into 2 repositories. This repository is for the Transfer Learning Experiments using Goemotions data.
+
+# Abstract
+
+Data has become ubiquitous in the modern day and age. However, the challenge lies in acquiring truthfully annotated high quality data. In this paper, we try to look into the challenge of limited labeled training data availability for NLP sentiment analysis tasks. We talk about the Sentiment Analysis task and it's broader usage in different fields and on varied datasets. We perform an extensive literature survey on the various model architectures used for emotion classification. We perform transfer learning by using a BERT base cased model on GoEmotions dataset for zero shot and one-shot fine tuning on twitter dataset. We then investigate the viability of using a GAN model as a semi supervised technique to leverage the presence of unlabeled data.
+
+This code has been adapted from [monologg's implementation of GoEmotions](https://github.com/monologg/GoEmotions-pytorch). The original README has been copied over to README_1.md
 Pytorch Implementation of [GoEmotions](https://github.com/google-research/google-research/tree/master/goemotions) with [Huggingface Transformers](https://github.com/huggingface/transformers)
 
 ## What is GoEmotions
@@ -63,7 +70,23 @@ You can change the parameters from the json files in `config` directory.
 
 ## How to Run
 
-For taxonomy, choose `original`, `group` or `ekman`
+### Baseline:
+
+
+### Experiment 1:
+For zero shot learning:
+
+```bash
+python3 Zero_Shot_Prediction.py --taxonomy twitter_zeroshot
+```
+
+### Experiment 2:
+For one shot learning:
+
+```bash
+python3 Retrain_Goemotions_classifier_layer.py --taxonomy twitter_frozenbert 
+
+```
 
 ```bash
 $ python3 run_goemotions.py --taxonomy {$TAXONOMY}
