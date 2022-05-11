@@ -257,7 +257,7 @@ args=cli_parser.parse_args()
 print("taxonomy:",args.taxonomy)
 print("outputs dir: ",args.out_dir)
 
-if 'zero' in taxonomy and shot in taxonomy:
+if 'zero' in args.taxonomy and 'shot' in args.taxonomy:
     plot_zero_shot()
 else:
     plot_data(args.out_dir,args.taxonomy)
