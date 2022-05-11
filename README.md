@@ -9,46 +9,6 @@ Data has become ubiquitous in the modern day and age. However, the challenge lie
 This code has been adapted from [monologg's implementation of GoEmotions](https://github.com/monologg/GoEmotions-pytorch). The original README has been copied over to README_1.md
 Pytorch Implementation of [GoEmotions](https://github.com/google-research/google-research/tree/master/goemotions) with [Huggingface Transformers](https://github.com/huggingface/transformers)
 
-## What is GoEmotions
-
-Dataset labeled **58000 Reddit comments** with **28 emotions**
-
-- admiration, amusement, anger, annoyance, approval, caring, confusion, curiosity, desire, disappointment, disapproval, disgust, embarrassment, excitement, fear, gratitude, grief, joy, love, nervousness, optimism, pride, realization, relief, remorse, sadness, surprise + neutral
-
-## Training Details
-
-- Use `bert-base-cased` (Same as the paper's code)
-- In paper, **3 Taxonomies** were used. I've also made the data with new taxonomy labels for `hierarchical grouping` and `ekman`.
-
-  1. **Original GoEmotions** (27 emotions + neutral)
-  2. **Hierarchical Grouping** (positive, negative, ambiguous + neutral)
-  3. **Ekman** (anger, disgust, fear, joy, sadness, surprise + neutral)
-
-### Vocabulary
-
-- I've replace `[unused1]`, `[unused2]` to `[NAME]`, `[RELIGION]` in the vocab, respectively.
-
-```text
-[PAD]
-[NAME]
-[RELIGION]
-[unused3]
-[unused4]
-...
-```
-
-- I've also set `special_tokens_map.json` as below, so the tokenizer won't split the `[NAME]` or `[RELIGION]` into its word pieces.
-
-```json
-{
-  "unk_token": "[UNK]",
-  "sep_token": "[SEP]",
-  "pad_token": "[PAD]",
-  "cls_token": "[CLS]",
-  "mask_token": "[MASK]",
-  "additional_special_tokens": ["[NAME]", "[RELIGION]"]
-}
-```
 
 ### Requirements
 
@@ -70,13 +30,18 @@ You can change the parameters from the json files in `config` directory.
 
 ## How to Run
 
-### Baseline:
-
+### Baseline (Twitter):
+```bash
+python3 run_goemotions.py --taxonomy twitter
+```
 
 ### Experiment 1:
 For zero shot learning:
 
 ```bash
+#First train model on GoEmotions group taxonomy
+python3 run_goemotions.py --taxonomy group
+#Then evaluate on twitter data
 python3 Zero_Shot_Prediction.py --taxonomy twitter_zeroshot
 ```
 
@@ -84,138 +49,20 @@ python3 Zero_Shot_Prediction.py --taxonomy twitter_zeroshot
 For one shot learning:
 
 ```bash
+#Change "train_file": <"labeled_200.tsv"|"labeled_8000.tsv"> in config/twitter_frozenberg.json to allow training with 200 vs 8000 examples respectively
 python3 Retrain_Goemotions_classifier_layer.py --taxonomy twitter_frozenbert 
-
 ```
 
+## Plotting Graphs:
 ```bash
-$ python3 run_goemotions.py --taxonomy {$TAXONOMY}
+python3 Results.py --out_dir ckpt/<taxonomy>/<checkpoint directory> --taxonomy <name_of_plots>
 
-$ python3 run_goemotions.py --taxonomy original
-$ python3 run_goemotions.py --taxonomy group
-$ python3 run_goemotions.py --taxonomy ekman
-```
-
-## Results
-
-Best Result of `Macro F1`
-
-| Macro F1 (%) |  Dev  | Test  |
-| ------------ | :---: | :---: |
-| original     | 50.16 | 50.30 |
-| group        | 69.41 | 70.06 |
-| ekman        | 62.59 | 62.38 |
-
-## Pipeline
-
-- Inference for multi-label classification was made possible by creating a new `MultiLabelPipeline` class.
-- Already uploaded `finetuned model` on Huggingface S3.
-  - Original GoEmotions Taxonomy: `monologg/bert-base-cased-goemotions-original`
-  - Hierarchical Group Taxonomy: `monologg/bert-base-cased-goemotions-group`
-  - Ekman Taxonomy: `monologg/bert-base-cased-goemotions-ekman`
-
-### 1. Original GoEmotions Taxonomy
-
-```python
-from transformers import BertTokenizer
-from model import BertForMultiLabelClassification
-from multilabel_pipeline import MultiLabelPipeline
-from pprint import pprint
-
-tokenizer = BertTokenizer.from_pretrained("monologg/bert-base-cased-goemotions-original")
-model = BertForMultiLabelClassification.from_pretrained("monologg/bert-base-cased-goemotions-original")
-
-goemotions = MultiLabelPipeline(
-    model=model,
-    tokenizer=tokenizer,
-    threshold=0.3
-)
-
-texts = [
-    "Hey that's a thought! Maybe we need [NAME] to be the celebrity vaccine endorsement!",
-    "it’s happened before?! love my hometown of beautiful new ken 😂😂",
-    "I love you, brother.",
-    "Troll, bro. They know they're saying stupid shit. The motherfucker does nothing but stink up libertarian subs talking shit",
-]
-
-pprint(goemotions(texts))
-
-# Output
- [{'labels': ['neutral'], 'scores': [0.9750906]},
- {'labels': ['curiosity', 'love'], 'scores': [0.9694574, 0.9227462]},
- {'labels': ['love'], 'scores': [0.993483]},
- {'labels': ['anger'], 'scores': [0.99225825]}]
-```
-
-
-### 2. Group Taxonomy
-
-```python
-from transformers import BertTokenizer
-from model import BertForMultiLabelClassification
-from multilabel_pipeline import MultiLabelPipeline
-from pprint import pprint
-
-tokenizer = BertTokenizer.from_pretrained("monologg/bert-base-cased-goemotions-group")
-model = BertForMultiLabelClassification.from_pretrained("monologg/bert-base-cased-goemotions-group")
-
-goemotions = MultiLabelPipeline(
-    model=model,
-    tokenizer=tokenizer,
-    threshold=0.3
-)
-
-texts = [
-    "Hey that's a thought! Maybe we need [NAME] to be the celebrity vaccine endorsement!",
-    "it’s happened before?! love my hometown of beautiful new ken 😂😂",
-    "I love you, brother.",
-    "Troll, bro. They know they're saying stupid shit. The motherfucker does nothing but stink up libertarian subs talking shit",
-]
-
-pprint(goemotions(texts))
-
-# Output
-[{'labels': ['positive'], 'scores': [0.9989434]},
- {'labels': ['ambiguous', 'positive'], 'scores': [0.99801123, 0.99845874]},
- {'labels': ['positive'], 'scores': [0.99930394]},
- {'labels': ['negative'], 'scores': [0.9984231]}]
-```
-
-### 3. Ekman Taxonomy
-
-```python
-from transformers import BertTokenizer
-from model import BertForMultiLabelClassification
-from multilabel_pipeline import MultiLabelPipeline
-from pprint import pprint
-
-tokenizer = BertTokenizer.from_pretrained("monologg/bert-base-cased-goemotions-ekman")
-model = BertForMultiLabelClassification.from_pretrained("monologg/bert-base-cased-goemotions-ekman")
-
-goemotions = MultiLabelPipeline(
-    model=model,
-    tokenizer=tokenizer,
-    threshold=0.3
-)
-
-texts = [
-    "Hey that's a thought! Maybe we need [NAME] to be the celebrity vaccine endorsement!",
-    "it’s happened before?! love my hometown of beautiful new ken 😂😂",
-    "I love you, brother.",
-    "Troll, bro. They know they're saying stupid shit. The motherfucker does nothing but stink up libertarian subs talking shit",
-]
-
-pprint(goemotions(texts))
-
-# Output
- [{'labels': ['joy', 'neutral'], 'scores': [0.30459446, 0.9217335]},
- {'labels': ['joy', 'surprise'], 'scores': [0.9981395, 0.99863845]},
- {'labels': ['joy'], 'scores': [0.99910116]},
- {'labels': ['anger'], 'scores': [0.9984291]}]
+#FOr example, the below command creates plots for accuracy and macro f1 score using the runs saved in the checkpoint directory 'ckpt/twitter/bert-base-cased-goemotions-twitter'. The name of the plots will start with 'twitter_unfrozen'. --taxonomy option in this command is just lazy naming and does not refer to the taxonomy used to generate the checkpoint results!
+python3 Results.py --out_dir ckpt/twitter/bert-base-cased-goemotions-twitter --taxonomy twitter_unfrozen
 ```
 
 ## Reference
-
+- [monologg's implementation of GoEmotions](https://github.com/monologg/GoEmotions-pytorch)
 - [GoEmotions](https://github.com/google-research/google-research/tree/master/goemotions)
 - [GoEmotions Github](https://github.com/google-research/google-research/tree/master/goemotions)
 - [Huggingface Transformers](https://github.com/huggingface/transformers)
