@@ -1,6 +1,6 @@
 # Assignment 4: GoEmotions Pytorch
 
-NOTE: Our Assignemnt is split into 2 repositories. This repository is for the Transfer Learning Experiments using Goemotions data.
+NOTE: Our Assignemnt is split into 2 repositories. This repository is for the Transfer Learning Experiments using Goemotions data. You can find the repository for Semi_Supervised Learning using GAN-BERT architecture at https://github.com/SamarthMM/ganbert-pytorch
 
 # Abstract
 
